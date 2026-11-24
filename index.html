@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ValidaObra</title>
+<link rel="manifest" href="manifest.json"><link rel="icon" href="icon-96.png"><link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#04060F">
+<style>
+:root{--glass:.14;--blur:18px;--glow:1;--al:#FF2B4A;--al-rgb:255,43,74;--acc:#00E5FF;--acc-rgb:0,229,255;--acc2:#7C4DFF;--acc2-rgb:124,77,255;--ok:#39FF88;--bad:#FF4D6D;--warn:#FFC53D;--txt:#EAF2FF;--mut:#8FA3C7;--azul:var(--acc);--sec:var(--mut);--verm:var(--bad);--verde:var(--ok)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:#04060F;color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}.hidden{display:none!important}
+.bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:radial-gradient(120% 80% at 50% 0%,#0B1233 0%,#04060F 60%)}
+.bg i{position:absolute;border-radius:50%;filter:blur(70px);opacity:calc(.45*var(--glow));animation:flutuar 14s ease-in-out infinite}
+.bg i:nth-child(1){width:60vmax;height:60vmax;left:-20vmax;top:-18vmax;background:rgba(var(--acc-rgb),.55)}
+.bg i:nth-child(2){width:55vmax;height:55vmax;right:-22vmax;top:30vh;background:rgba(var(--acc2-rgb),.5);animation-delay:-5s}
+.bg i:nth-child(3){width:45vmax;height:45vmax;left:5vmax;bottom:-22vmax;background:rgba(var(--acc-rgb),.35);animation-delay:-9s}
+body.sem-anim .bg i{animation:none}
+@keyframes flutuar{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(4vmax,3vmax) scale(1.12)}}
+.glass,.card,.item,.busca input{background:rgba(255,255,255,var(--glass));border:1px solid rgba(255,255,255,calc(.07 + var(--glass)*.45));backdrop-filter:blur(var(--blur)) saturate(150%);-webkit-backdrop-filter:blur(var(--blur)) saturate(150%);box-shadow:0 10px 34px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}
+.topbar{position:sticky;top:0;z-index:50;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px 10px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:.3px;color:var(--acc);text-shadow:0 0 calc(14px*var(--glow)) rgba(var(--acc-rgb),.75)}
+.logo b{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 0 calc(18px*var(--glow)) rgba(var(--acc-rgb),.7)}
+.logo svg{width:19px;height:19px;stroke:#04060F;stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.cnt{font-size:12px;color:var(--mut);padding:6px 12px;border-radius:999px}.cnt strong{color:var(--acc)}
+main{position:relative;z-index:1;padding:4px 14px 120px;max-width:520px;margin:0 auto}
+
+.tab{display:none;animation:subir .3s ease}.tab.on{display:block}
+@keyframes subir{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.card{border-radius:20px;padding:16px;margin-bottom:12px}
+h2{margin:0 0 calc(12px*var(--glow));font-size:16px;color:var(--acc);text-shadow:0 0 calc(12px*var(--glow)) rgba(var(--acc-rgb),.6);display:flex;gap:8px;align-items:center}
+input,select,textarea{width:100%;padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.28);outline:0;font-size:16px;font-weight:600}
+input:focus,select:focus{border-color:var(--acc);box-shadow:0 0 calc(16px*var(--glow)) rgba(var(--acc-rgb),.45)}
+select option{background:#0B1233;color:#EAF2FF}
+label{display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:800;letter-spacing:.8px;color:var(--mut);text-transform:uppercase}
+.btn{border:0;border-radius:16px;padding:15px 18px;font-weight:800;font-size:15px;cursor:pointer;transition:.15s;color:#04060F;background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 0 calc(24px*var(--glow)) rgba(var(--acc-rgb),.55)}
+.btn:active{transform:scale(.97)}
+.btn.out{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);color:var(--txt);box-shadow:none}
+.btn.red{background:rgba(255,77,109,.16);border:1px solid rgba(255,77,109,.5);color:#FF8FA3;box-shadow:none}
+.btn.full{width:100%}
+.busca{padding:12px 0 14px;text-align:center}
+.busca>div{font-size:11px;font-weight:800;letter-spacing:1.2px;color:var(--mut);text-transform:uppercase;margin-bottom:10px}
+.busca input{height:64px;font-size:19px;font-weight:700;text-align:center;border-radius:22px;border:1.5px solid rgba(var(--acc-rgb),.75);box-shadow:0 0 calc(18px*var(--glow)) rgba(var(--acc-rgb),.3),0 10px 34px rgba(0,0,0,.35)}
+.busca input:focus{box-shadow:0 0 0 1.5px var(--acc),0 0 calc(30px*var(--glow)) rgba(var(--acc-rgb),.55)}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 0 calc(14px*var(--glow))}.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:8px 15px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);font-size:13px;font-weight:600;color:var(--mut);cursor:pointer}
+.chip.on{color:#04060F;background:linear-gradient(135deg,var(--acc),var(--acc2));border-color:transparent;box-shadow:0 0 calc(16px*var(--glow)) rgba(var(--acc-rgb),.6)}
+.item{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:14px 14px 14px 18px;border-radius:18px;margin-bottom:10px;cursor:pointer;position:relative;overflow:hidden;transition:transform .15s}
+.item:active{transform:scale(.985)}
+.item::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:3px;background:var(--ok);box-shadow:0 0 calc(12px*var(--glow)) var(--ok)}
+.item.atencao::before{background:var(--warn);box-shadow:0 0 calc(12px*var(--glow)) var(--warn)}.item.vencido::before{background:var(--bad);box-shadow:0 0 calc(12px*var(--glow)) var(--bad)}
+.item.vencido{border-color:rgba(255,77,109,.6);box-shadow:0 0 calc(22px*var(--glow)) rgba(255,77,109,.25),0 10px 34px rgba(0,0,0,.35)}
+.item strong{display:block;font-size:16px;color:var(--acc);text-shadow:0 0 calc(10px*var(--glow)) rgba(var(--acc-rgb),.55)}
+.item small{color:var(--mut);font-size:12px;line-height:1.5;display:block;margin-top:3px}
+.tag{font-size:12px;font-weight:900;padding:6px 11px;border-radius:99px;white-space:nowrap;color:var(--ok);background:rgba(57,255,136,.14);text-shadow:0 0 calc(10px*var(--glow)) rgba(57,255,136,.6)}
+.atencao .tag{color:var(--warn);background:rgba(255,197,61,.15);text-shadow:0 0 calc(10px*var(--glow)) rgba(255,197,61,.6)}
+.vencido .tag{color:#FF8FA3;background:rgba(255,77,109,.2);text-shadow:0 0 calc(10px*var(--glow)) rgba(255,77,109,.7)}
+.vazio{text-align:center;color:var(--mut);padding:36px 20px;font-size:14px;line-height:1.55}
+.local-h{display:flex;justify-content:space-between;color:var(--acc);font-weight:800;margin:2px 2px 12px;text-shadow:0 0 calc(12px*var(--glow)) rgba(var(--acc-rgb),.6)}
+.local-h span+span{color:var(--mut);font-size:12px;text-shadow:none}
+.linha{display:flex;gap:10px;margin-bottom:10px}.linha>*{flex:1;min-width:0}
+.dica{font-size:12px;color:var(--acc);margin-top:-4px}
+nav{position:fixed;z-index:60;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);display:flex;padding:7px;border-radius:26px;max-width:492px;margin:0 auto;background:rgba(255,255,255,var(--glass));border:1px solid rgba(255,255,255,calc(.07 + var(--glass)*.45));backdrop-filter:blur(var(--blur)) saturate(150%);-webkit-backdrop-filter:blur(var(--blur)) saturate(150%);box-shadow:0 10px 34px rgba(0,0,0,.35)}
+nav button{flex:1;border:0;background:none;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;border-radius:19px;font-size:11.5px;font-weight:800;transition:.2s;cursor:pointer}
+nav svg{width:25px;height:25px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+nav button.on{color:var(--acc);background:rgba(var(--acc-rgb),.14);text-shadow:0 0 calc(10px*var(--glow)) rgba(var(--acc-rgb),.8)}nav button.on svg{filter:drop-shadow(0 0 calc(7px*var(--glow)) var(--acc))}
+.modal-bg{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center;animation:fade .2s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{width:100%;max-width:520px;max-height:90vh;overflow:auto;padding:12px 20px calc(24px + env(safe-area-inset-bottom,0px));border-radius:28px 28px 0 0;background:rgba(10,16,40,.92);border:1px solid rgba(var(--acc-rgb),.4);border-bottom:0;box-shadow:0 -10px 50px rgba(var(--acc-rgb),.25);display:flex;flex-direction:column;gap:12px;animation:sobe .28s ease}
+@keyframes sobe{from{transform:translateY(60%)}to{transform:none}}
+.modal::before{content:"";width:46px;height:5px;border-radius:5px;background:rgba(255,255,255,.3);margin:0 auto 6px;flex:none}
+.modal h3{margin:0;font-size:20px;color:var(--acc);text-shadow:0 0 calc(12px*var(--glow)) rgba(var(--acc-rgb),.6)}
+@media(min-width:640px){.modal-bg{align-items:center}.modal{border-radius:28px;border-bottom:1px solid rgba(var(--acc-rgb),.4)}}
+.toast{position:fixed;z-index:1000;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 98px);transform:translateX(-50%);padding:12px 20px;border-radius:999px;font-weight:700;font-size:14px;background:rgba(10,16,40,.95);border:1px solid var(--acc);box-shadow:0 0 calc(24px*var(--glow)) rgba(var(--acc-rgb),.5)}
+/* ===== ALERTA VERMELHO (mantido) ===== */
+.alerta-tela{position:fixed;inset:0;z-index:900;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(20,0,6,.6);backdrop-filter:blur(12px) saturate(120%);-webkit-backdrop-filter:blur(12px) saturate(120%);animation:subir .22s}
+body.alerta-aberto{overflow:hidden}
+.alerta-caixa{width:100%;max-width:420px;max-height:88vh;overflow:auto;border-radius:24px;padding:22px 18px 18px;text-align:center;color:#fff;background:linear-gradient(160deg,rgba(var(--al-rgb),.38),#14030A 75%);border:1.5px solid var(--al);animation:pulso 1.4s ease-in-out infinite}
+@keyframes pulso{0%,100%{box-shadow:0 0 calc(30px*var(--glow)) rgba(var(--al-rgb),.5),0 20px 50px rgba(0,0,0,.6)}50%{box-shadow:0 0 calc(62px*var(--glow)) rgba(var(--al-rgb),1),0 20px 50px rgba(0,0,0,.6)}}
+.sirene{width:64px;height:64px;margin:0 auto;animation:bal 1s ease-in-out infinite;filter:drop-shadow(0 0 14px var(--al))}.sirene svg,.fab svg{width:100%;height:100%;stroke:#fff;fill:rgba(var(--al-rgb),.35);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}@keyframes bal{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(10deg)}}
+.alerta-caixa h3{margin:4px 0;font-size:22px}.alerta-caixa p{margin:0 0 calc(14px*var(--glow));color:#FFC7D0;font-size:14px}
+.a-item{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;padding:12px 14px;border-radius:14px;background:rgba(var(--al-rgb),.16);border:1px solid rgba(var(--al-rgb),.65);margin-bottom:10px}
+.a-item.v{background:rgba(var(--al-rgb),.3);border-color:var(--al)}
+.a-item strong{display:block;font-size:15px}.a-item span{font-size:12.5px;color:#FFC7D0;font-weight:600}
+.a-ok{background:rgba(57,255,136,.16);color:var(--ok);border:1px solid var(--ok);border-radius:99px;padding:7px 13px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;text-shadow:0 0 calc(8px*var(--glow)) rgba(57,255,136,.6)}
+.a-min{width:100%;margin-top:4px;padding:12px;border:none;border-radius:14px;background:rgba(255,255,255,.1);color:#fff;font-weight:700;cursor:pointer}
+.fab{position:fixed;z-index:80;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 98px);width:68px;height:68px;border-radius:50%;border:2px solid rgba(255,255,255,.85);padding:14px;cursor:pointer;background:radial-gradient(circle at 35% 30%,#fff3,transparent 45%),linear-gradient(145deg,var(--al),#B0001F);box-shadow:0 0 28px rgba(var(--al-rgb),.95),0 0 60px rgba(var(--al-rgb),.6);animation:tremer 2.2s ease-in-out infinite,brilho 1.2s ease-in-out infinite}
+.fab::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--al);animation:onda 1.4s ease-out infinite}
+.fab b{position:absolute;top:-6px;right:-6px;min-width:26px;height:26px;border-radius:99px;background:#fff;color:#C20028;font-size:14px;font-weight:900;display:grid;place-items:center;padding:0 6px;box-shadow:0 0 12px #fff}
+@keyframes tremer{0%,70%,100%{transform:rotate(0)}74%{transform:rotate(-12deg)}80%{transform:rotate(12deg)}86%{transform:rotate(-8deg)}92%{transform:rotate(6deg)}}
+@keyframes brilho{0%,100%{box-shadow:0 0 22px rgba(var(--al-rgb),.8),0 0 44px rgba(var(--al-rgb),.45)}50%{box-shadow:0 0 40px rgba(var(--al-rgb),1),0 0 80px rgba(var(--al-rgb),.8)}}
+@keyframes onda{from{transform:scale(1);opacity:.9}to{transform:scale(1.7);opacity:0}}
+.drop{display:block;border:2px dashed rgba(var(--acc-rgb),.55);border-radius:20px;padding:20px 14px;text-align:center;background:rgba(var(--acc-rgb),.06);cursor:pointer}
+.drop .big{font-size:32px}.drop b{display:block;margin:6px 0 4px;font-size:15px}.drop span{font-size:12px;color:var(--mut)}
+.st,.ajuda{font-size:12.5px;color:var(--mut);line-height:1.5;margin-top:10px}.st b{color:var(--ok)}
+.res{margin-top:10px;padding:12px;border-radius:14px;background:rgba(57,255,136,.1);border:1px solid rgba(57,255,136,.4);font-size:13px;line-height:1.5;overflow-wrap:anywhere}.res.err{background:rgba(255,77,109,.1);border-color:rgba(255,77,109,.45)}
+.bar{height:8px;border-radius:8px;background:rgba(255,255,255,.1);overflow:hidden;margin-top:12px}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--acc),var(--acc2));box-shadow:0 0 12px var(--acc);transition:width .2s}
+.modal.foco>*:not(.keep){filter:blur(6px) brightness(.55);opacity:.7;pointer-events:none}.modal>*{transition:filter .25s,opacity .25s}
+nav button{font-size:10px;padding:8px 0}nav svg{width:23px;height:23px}
+.btn.sm{padding:10px 12px;font-size:13px;border-radius:13px}
+.item.c-baixa::before{background:var(--bad);box-shadow:0 0 12px var(--bad)}.item.c-pos::before{background:var(--ok);box-shadow:0 0 12px var(--ok)}.item.c-ok::before{background:var(--acc);box-shadow:0 0 12px var(--acc)}.item.c-sem::before{background:#8A94A6;box-shadow:none}
+.c-baixa .tag{color:#FF8FA3;background:rgba(255,77,109,.2)}.c-pos .tag{color:var(--ok);background:rgba(57,255,136,.14)}.c-ok .tag{color:var(--acc);background:rgba(var(--acc-rgb),.14)}.c-sem .tag{color:#B7C0D0;background:rgba(255,255,255,.1);text-shadow:none}
+.item.cf{cursor:default}.nums{display:flex;gap:14px;margin-top:6px;font-size:12px;color:var(--mut)}.nums b{color:var(--txt);font-size:14px}
+.voltar{background:none;border:0;color:var(--acc);font-weight:800;font-size:14px;padding:6px 2px 12px;cursor:pointer}
+.sug{border:1.5px solid rgba(var(--acc-rgb),.7);border-radius:16px;padding:6px;background:rgba(var(--acc-rgb),.06)}
+.sug div{display:flex;gap:10px;align-items:center;padding:10px;border-radius:12px;cursor:pointer;font-size:13px;line-height:1.3}.sug div:active{background:rgba(var(--acc-rgb),.18)}
+.sug b{color:var(--acc);min-width:54px}.sug small{color:var(--mut);margin-left:auto}
+.cores{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cor{border:2px solid transparent;border-radius:16px;padding:12px 6px;text-align:center;font-weight:800;font-size:12px;background:rgba(255,255,255,.07);cursor:pointer}
+.cor i{display:block;height:24px;border-radius:9px;margin-bottom:7px}.cor.on{border-color:#fff;box-shadow:0 0 18px rgba(255,255,255,.35)}
+.rl{display:flex;justify-content:space-between;margin:14px 0 6px;font-size:14px;font-weight:700}.rl span{color:var(--acc);font-weight:800}
+input[type=range]{padding:0;height:28px;accent-color:var(--acc);background:none;border:0}input[type=color]{height:48px;padding:0;border:0;background:none}
+input[type=checkbox]{width:50px;height:28px;accent-color:var(--acc);padding:0}.sw{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:14px;margin-top:14px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style></head><body>
+<div class="bg"><i></i><i></i><i></i></div>
+<div class="topbar"><div class="logo"><b><svg viewBox="0 0 24 24"><path d="M6 3h12M6 21h12M7 3c0 5 4 6 5 9-1 3-5 4-5 9M17 3c0 5-4 6-5 9 1 3 5 4 5 9"/></svg></b><span>VALIDAOBRA</span></div><div class="cnt glass"><strong id="cnt">0</strong> materiais</div></div>
+<button id="fab" class="fab hidden" aria-label="Alertas pendentes"><svg viewBox="0 0 24 24"><path d="M12 3 2.5 20h19z"/><path d="M12 10v4.5M12 17.5v.01"/></svg><b id="fabN">0</b></button>
+<main>
+ <section class="tab on" id="t-pesq">
+  <div class="busca"><div style="font-size:13px;color:var(--sec);margin-bottom:8px">Pesquisar material</div>
+   <input id="q" type="search" placeholder="Nome ou código do material" autocomplete="off"></div>
+  <div class="chips" id="chips"><button class="chip on" data-f="todos">Todos</button><button class="chip" data-f="venc">Vencidos</button><button class="chip" data-f="aten">Perto de vencer</button><button class="chip" data-f="ok">Em dia</button></div>
+  <div class="card sw" style="padding:12px 16px;margin:0 0 12px"><span>⏳ Só materiais que costumam ter validade</span><input type="checkbox" id="soVal"></div>
+  <div id="res"></div>
+ </section>
+ <section class="tab" id="t-cad">
+  <div class="card"><h2>Cadastro</h2>
+   <button class="btn full" id="novo">➕ Cadastrar material</button></div>
+    <div class="card"><h2>Importar do MEGA</h2>
+   <p class="ajuda" style="margin:0 0 12px">Traga a planilha do MEGA (código, descrição, unidade...). Depois, ao cadastrar um material, é só digitar o código ou nome e escolher — ele preenche sozinho.</p>
+   <label class="drop" for="arqMega"><div class="big">📊</div><b>Escolher arquivo do MEGA</b><span>Excel (.xlsx) ou CSV · pode escolher mais de um</span></label>
+   <input id="arqMega" type="file" accept=".xlsx,.csv,.txt" class="hidden" multiple>
+   <div class="st" id="stMega"></div><div class="bar hidden" id="bar"><i></i></div><div id="resultado"></div>
+   <button class="btn red full" id="bLimpaCat" style="margin-top:12px">🗑 Apagar catálogo do MEGA</button></div>
+  <div class="card"><h2>Locais</h2>
+   <div class="linha"><input id="novoLocal" placeholder="Ex.: Almoxarifado 1, Prateleira A"><button class="btn" id="addLocal" style="flex:0 0 auto">Adicionar</button></div>
+   <div id="listaLocais"></div></div>
+ </section>
+ <section class="tab" id="t-arm"><div id="arm"></div></section>
+ <section class="tab" id="t-conf">
+  <div class="card"><h2>Conferência com o MEGA</h2>
+   <p class="ajuda" style="margin:0 0 12px">Compara o que está guardado na obra (soma das quantidades cadastradas, por código) com o saldo do MEGA. Abaixo do MEGA = <b style="color:#FF8FA3">dar baixa</b>. Acima do MEGA = <b style="color:var(--ok)">dar saldo positivo</b>.</p>
+   <button class="btn full" id="cfExp">📄 Exportar conferência em DOCX</button></div>
+  <div class="chips" id="cfChips"><button class="chip on" data-f="todos">Todos</button><button class="chip" data-f="baixa">Dar baixa</button><button class="chip" data-f="pos">Saldo positivo</button><button class="chip" data-f="ok">Batendo</button><button class="chip" data-f="sem">Sem MEGA</button></div>
+  <div id="cfAviso"></div><div id="cfLista"></div>
+ </section>
+ <section class="tab" id="t-cfg">
+  <div class="card"><h2>Alertas</h2>
+   <label>Avisar quando faltar (dias) para vencer<input id="cLimite" type="number" min="1" max="365"></label><br>
+   <label>Dia da auditoria no mês (0 = desligado)<input id="cAud" type="number" min="0" max="31"></label>
+   <div class="dica">No dia marcado, aparece um alerta vermelho todo mês até você confirmar que a auditoria foi feita.</div><br>
+   <label>Som<select id="cSom"><option value="1">Ligado</option><option value="0">Desligado</option></select></label><br>
+   <label>Vibração<select id="cVib"><option value="1">Ligada</option><option value="0">Desligada</option></select></label><br>
+   <button class="btn out full" id="cNotif">🔔 Ativar notificações do celular</button><br><br>
+   <button class="btn full" id="cSalvar">Salvar configurações</button></div>
+    <div class="card"><h2>Cores do app</h2><div class="cores" id="cores"></div>
+   <div class="rl">Cor principal</div><input type="color" id="corAcc"><div class="rl">Cor secundária</div><input type="color" id="corAcc2"></div>
+  <div class="card"><h2>Cor do alerta</h2><div class="cores" id="coresAl"></div><div class="rl">Cor personalizada</div><input type="color" id="corAl"></div>
+  <div class="card"><h2>Vidro e brilho</h2>
+   <div class="rl">Transparência <span id="tV"></span></div><input type="range" id="rGlass" min="2" max="45">
+   <div class="rl">Desfoque <span id="dV"></span></div><input type="range" id="rBlur" min="0" max="34">
+   <div class="rl">Brilho neon <span id="bV"></span></div><input type="range" id="rGlow" min="0" max="150">
+   <div class="sw">Fundo animado <input type="checkbox" id="swAnim"></div><br>
+   <button class="btn out full" id="bReset">↺ Restaurar visual padrão</button></div>
+    <div class="card"><h2>Materiais com validade</h2>
+   <p class="ajuda" style="margin:0 0 12px">O filtro ⏳ reconhece pelo <b>nome</b> (tinta, argamassa, cimento, silicone, PU, cola, rejunte, resina, solvente, álcool, graxa, bateria, extintor...) e pela <b>unidade de medida</b> (L, GL, balde, lata, bisnaga, frasco, cartucho, saco, kg), ignorando areia, brita, tubos, ferro e parecidos. Acrescente o que faltar:</p>
+   <label>Palavras extras (separe por vírgula)<input id="kwExtra" placeholder="Ex.: epóxi bicomponente, massa plástica"></label><br>
+   <label>Unidades extras (separe por vírgula)<input id="unExtra" placeholder="Ex.: pt, kit"></label><br>
+   <button class="btn full" id="kwSalvar">Salvar filtro</button></div>
+  <div class="card"><h2>Backup</h2>
+   <button class="btn out full" id="bExp">Exportar dados</button><br><br>
+   <button class="btn out full" id="bImp">Importar dados</button><input type="file" id="bFile" accept=".json" class="hidden"></div>
+ </section>
+</main>
+<nav>
+ <button class="on" data-t="t-pesq"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>Pesquisar</button>
+ <button data-t="t-cad"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/><rect x="3" y="3" width="18" height="18" rx="5"/></svg>Cadastro</button>
+ <button data-t="t-arm"><svg viewBox="0 0 24 24"><path d="M3 8l9-5 9 5v8l-9 5-9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>Armazenados</button>
+ <button data-t="t-conf"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="3"/><path d="M9 4V3h6v1M9 13l2 2 4-4"/></svg>Conferir</button>
+ <button data-t="t-cfg"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>Ajustes</button>
+</nav>
+<div id="alerta" class="alerta-tela hidden" role="alertdialog" aria-modal="true"><div class="alerta-caixa">
+ <div class="sirene"><svg viewBox="0 0 24 24"><path d="M12 3 2.5 20h19z"/><path d="M12 10v4.5M12 17.5v.01"/></svg></div><h3 id="aT"></h3><p id="aS"></p><div id="aL"></div>
+ <button class="a-min" id="aMin">Ver o app (o alerta fica flutuando)</button></div></div>
+<div id="modalHost"></div>
+<script>
+/* ============ ESTADO (localStorage + cópia de segurança) ============ */
+const KEY="validaobra_v1", TIPOS=["Unidade","Bisnaga","Litro","Galão","Lata","Peça","Saco","Caixa","Balde","Kg","Metro","Outro"];
+const padrao=()=>({materiais:[],locais:[],resolvidos:{},enviadas:{},cfg:{soVal:false,kwExtra:"",unExtra:"",limite:30,auditoriaDia:0,som:true,vib:true,notif:false}});
+let E=padrao();
+function carregar(){for(const k of [KEY,KEY+"_bak"]){try{const d=JSON.parse(localStorage.getItem(k));if(d){E=Object.assign(padrao(),d);E.cfg=Object.assign(padrao().cfg,d.cfg);return}}catch(e){}}}
+function salvar(){try{const a=localStorage.getItem(KEY);if(a)localStorage.setItem(KEY+"_bak",a);localStorage.setItem(KEY,JSON.stringify(E))}catch(e){}}
+carregar();
+/* ============ UTILS ============ */
+const norm=s=>String(s??'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();
+
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const pad=n=>String(n).padStart(2,"0");
+const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parse=s=>{const[a,b,c]=s.split("-").map(Number);return new Date(a,b-1,c)};
+const br=s=>s?s.split("-").reverse().join("/"):"—";
+function somaMeses(s,m){const d=parse(s),dia=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+Number(m));const ult=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();d.setDate(Math.min(dia,ult));return iso(d)}
+const validade=m=>m.val||(m.fab&&m.meses?somaMeses(m.fab,m.meses):"");
+function dias(m){const v=validade(m);if(!v)return null;const h=new Date();h.setHours(0,0,0,0);return Math.round((parse(v)-h)/864e5)}
+function status(m){const d=dias(m);if(d===null)return{c:"",t:"Sem validade",d};if(d<0)return{c:"vencido",t:`Vencido há ${-d} d`,d};if(d===0)return{c:"vencido",t:"Vence HOJE",d};if(d<=E.cfg.limite)return{c:"atencao",t:`Vence em ${d} d`,d};return{c:"",t:`${d} dias`,d}}
+function toast(t){const e=document.createElement("div");e.className="toast";e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),2200)}
+const vibrar=p=>{if(E.cfg.vib&&navigator.vibrate){try{navigator.vibrate(p)}catch(e){}}};
+function bipe(){if(!E.cfg.som)return;try{const c=new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type="square";o.frequency.value=880;g.gain.value=.08;o.start();o.stop(c.currentTime+.25)}catch(e){}}
+/* ============ CATÁLOGO MEGA (IndexedDB) ============ */
+let cat=[],idb=null,metaMega=null;
+const reqP=r=>new Promise(ok=>{r.onsuccess=()=>ok(r.result);r.onerror=()=>ok(undefined)});
+function abrirDB(){return new Promise(res=>{try{const r=indexedDB.open("validaobra-app",1);r.onupgradeneeded=()=>r.result.createObjectStore("catalogo",{keyPath:"cod"});r.onsuccess=()=>{idb=r.result;res()};r.onerror=()=>res()}catch(e){res()}})}
+async function catGravar(a){if(!idb)return;await new Promise(ok=>{const t=idb.transaction("catalogo","readwrite"),st=t.objectStore("catalogo");st.clear();a.forEach(x=>{const{h,v,...y}=x;st.put(y)});t.oncomplete=ok;t.onerror=ok;t.onabort=ok})}
+async function catLer(){return idb?((await reqP(idb.transaction("catalogo").objectStore("catalogo").getAll()))||[]):[]}
+/* ============ MATERIAIS QUE COSTUMAM TER VALIDADE (nome + unidade de medida) ============ */
+const KW_PAD="tinta,esmalte,verniz,primer,selador,massa corrida,massa acrilica,massa pva,textura,grafiato,argamassa,cimento,rejunte,cal,gesso,cola,adesivo,silicone,selante,mastique,calafetador,poliuretano,pu,pva,espuma expansiva,epoxi,resina,impermeabilizante,manta liquida,hidrofugante,solvente,thinner,aguarras,diluente,removedor,alcool,acetona,desmoldante,desengripante,lubrificante,graxa,oleo,anticorrosivo,zarcao,spray,aerosol,cloro,hipoclorito,desinfetante,detergente,fita adesiva,fita dupla face,bateria,pilha,extintor,estopim,vedante,veda rosca,veda calha,fluxo solda,pasta de solda,silicone";
+const UN_PAD="l,lt,litro,litros,gl,galao,bd,balde,lata,bisn,bisnaga,fr,frasco,cart,cartucho,sc,saco,kg,tb,tubo bisnaga";
+const KW_NAO="areia,brita,pedra,tijolo,bloco,telha,ferro,aco,prego,parafuso,arame,tubo,conexao,cabo,fio,tela,vergalhao,viga,madeira,porta,janela,piso,azulejo,ceramica,porcelanato,disco,broca,lamina,serra,luva,capacete,bota,pedrisco,pó de pedra,po de pedra".split(",");
+const listaCsv=t=>String(t||"").split(",").map(x=>norm(x)).filter(Boolean);
+function kwLista(){return[...new Set([...listaCsv(KW_PAD),...listaCsv(E.cfg.kwExtra)])]}
+function unLista(){return new Set([...listaCsv(UN_PAD),...listaCsv(E.cfg.unExtra)])}
+function ehValidade(i,KW,UN){const n=" "+norm(i.desc)+" ";
+ if(KW.some(k=>k.length<=3?n.includes(" "+k+" "):n.includes(" "+k)))return"nome";
+ if(UN.has(norm(i.un||""))&&!KW_NAO.some(k=>n.includes(" "+k)))return"unidade";return""}
+function indexCat(){const KW=kwLista(),UN=unLista();cat.forEach(i=>{i.h=norm(i.cod+" "+i.desc);i.v=ehValidade(i,KW,UN)})}
+
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav button,.tab").forEach(x=>x.classList.remove("on"));b.classList.add("on");$(b.dataset.t).classList.add("on");render()});
+/* ============ LEITOR DE PLANILHA (mesmo do app Memorando) ============ */
+/* ===================== leitor de planilha (xlsx / csv) ===================== */
+const u16=(d,o)=>d.getUint16(o,true), u32=(d,o)=>d.getUint32(o,true);
+async function inflar(bytes){
+  const ds=new DecompressionStream('deflate-raw');
+  return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(ds)).arrayBuffer());
+}
+function zipIndex(buf){
+  const d=new DataView(buf); let e=-1;
+  for(let i=buf.byteLength-22;i>=Math.max(0,buf.byteLength-65600);i--){if(u32(d,i)===0x06054b50){e=i;break}}
+  if(e<0)throw new Error('Arquivo não é um .xlsx válido.');
+  const n=u16(d,e+10); let p=u32(d,e+16); const m=new Map(); const td=new TextDecoder();
+  for(let i=0;i<n;i++){
+    if(u32(d,p)!==0x02014b50)break;
+    const meth=u16(d,p+10),cs=u32(d,p+20),us=u32(d,p+24),nl=u16(d,p+28),el=u16(d,p+30),cl=u16(d,p+32),off=u32(d,p+42);
+    m.set(td.decode(new Uint8Array(buf,p+46,nl)),{meth,cs,us,off}); p+=46+nl+el+cl;
+  }
+  return m;
+}
+async function zipGet(buf,idx,name,max){
+  const f=idx.get(name); if(!f)return null;
+  if(max&&f.us>max)throw new Error('GRANDE:'+name);
+  const d=new DataView(buf); const o=f.off;
+  const start=o+30+u16(d,o+26)+u16(d,o+28);
+  const raw=new Uint8Array(buf,start,f.cs);
+  return new TextDecoder('utf-8').decode(f.meth===0?raw:await inflar(raw));
+}
+const unesc=s=>s.replace(/&#x([0-9a-f]+);/gi,(_,h)=>String.fromCodePoint(parseInt(h,16))).replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(+n))
+  .replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&');
+function colIdx(ref){let n=0;const m=/^[A-Z]+/.exec(ref);if(!m)return 0;for(const c of m[0])n=n*26+c.charCodeAt(0)-64;return n-1}
+function lerShared(xml){
+  const out=[]; if(!xml)return out;
+  for(const m of xml.matchAll(/<si\b[^>]*>([\s\S]*?)<\/si>/g)){
+    const bloco=m[1].replace(/<rPh\b[\s\S]*?<\/rPh>/g,'');
+    let s=''; for(const t of bloco.matchAll(/<t\b[^>]*>([\s\S]*?)<\/t>/g))s+=t[1];
+    out.push(unesc(s));
+  }
+  return out;
+}
+function lerSheet(xml,shared,maxRows=60000){
+  const rows=[];
+  for(const rm of xml.matchAll(/<row\b[^>]*>([\s\S]*?)<\/row>/g)){
+    const arr=[]; let any=false;
+    for(const cm of rm[1].matchAll(/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)){
+      const at=cm[1],body=cm[2]; if(!body)continue;
+      const r=/\br="([A-Z]+\d+)"/.exec(at), t=/\bt="(\w+)"/.exec(at);
+      const ci=r?colIdx(r[1]):arr.length; if(ci>30)continue;
+      let v='';
+      if(t&&t[1]==='inlineStr'){let s='';for(const x of body.matchAll(/<t\b[^>]*>([\s\S]*?)<\/t>/g))s+=x[1];v=unesc(s)}
+      else{const vm=/<v>([\s\S]*?)<\/v>/.exec(body); if(vm){
+        if(t&&t[1]==='s')v=shared[+vm[1]]??''; else if(t&&t[1]==='e')v=''; else if(t&&t[1]==='str')v=unesc(vm[1]); else v=vm[1];}}
+      if(v!==''){arr[ci]=v;any=true}
+    }
+    if(any){rows.push(arr);if(rows.length>=maxRows)break}
+  }
+  return rows;
+}
+async function abrirXlsx(buf){
+  const idx=zipIndex(buf);
+  const wbx=await zipGet(buf,idx,'xl/workbook.xml'); if(!wbx)throw new Error('Planilha sem abas.');
+  const rel=await zipGet(buf,idx,'xl/_rels/workbook.xml.rels')||'';
+  const alvo={}; for(const m of rel.matchAll(/<Relationship\b[^>]*>/g)){
+    const id=/\bId="([^"]+)"/.exec(m[0]),tg=/\bTarget="([^"]+)"/.exec(m[0]); if(id&&tg){let t=tg[1].replace(/^\//,'');if(!t.startsWith('xl/'))t='xl/'+t;alvo[id[1]]=t}}
+  const abas=[...wbx.matchAll(/<sheet\b[^>]*>/g)].map(m=>{
+    const nm=/\bname="([^"]*)"/.exec(m[0]),id=/\br:id="([^"]+)"/.exec(m[0]),hid=/state="(hidden|veryHidden)"/.test(m[0]);
+    return {nome:unesc(nm?nm[1]:''),arq:id?alvo[id[1]]:null,hid}}).filter(a=>a.arq&&idx.has(a.arq)&&!a.hid);
+  const shared=lerShared(await zipGet(buf,idx,'xl/sharedStrings.xml',150e6));
+  return {idx,abas,shared};
+}
+/* percorre as abas e devolve o que o leitor (mapper) reconhecer. todas=true junta todas as abas reconhecidas */
+async function lerXlsxGen(buf,onProg,mapper,{todas=false,preferir=null,evitar=null}={}){
+  const {idx,abas,shared}=await abrirXlsx(buf);
+  const pts=a=>(preferir&&preferir.test(a.nome)?-10:0)+(evitar&&evitar.test(a.nome.trim())?5:0);
+  abas.sort((a,b)=>pts(a)-pts(b));
+  const achou=[]; let tent=0,grande=false;
+  for(const ab of abas){
+    if(tent++>=25)break; onProg&&onProg(.1+.6*tent/Math.min(25,abas.length));
+    let xml; try{xml=await zipGet(buf,idx,ab.arq,120e6)}catch(e){grande=true;continue}
+    if(!xml)continue;
+    const r=mapper(lerSheet(xml,shared)); xml=null;
+    if(r&&r.itens.length){achou.push({...r,aba:ab.nome});if(!todas)break}
+  }
+  if(!achou.length)throw new Error(grande?'GRANDE':'NAO_ACHEI');
+  return achou;
+}
+const lerXlsxCat=async(buf,onProg,preferirMega)=>(await lerXlsxGen(buf,onProg,mapCatalogo,{preferir:preferirMega?/mega/i:null,evitar:/^(mem|memo|placa|etiq|imprimir|plan\d|planilha\d|consultar)/i}))[0];
+function parseCSV(txt){
+  txt=txt.replace(/^﻿/,''); const l0=txt.split('\n')[0]; const sep=(l0.match(/;/g)||[]).length>=(l0.match(/,/g)||[]).length?';':',';
+  const rows=[];let row=[],cur='',q=false;
+  for(let i=0;i<txt.length;i++){const c=txt[i];
+    if(q){if(c==='"'){if(txt[i+1]==='"'){cur+='"';i++}else q=false}else cur+=c}
+    else if(c==='"')q=true; else if(c===sep){row.push(cur);cur=''}
+    else if(c==='\n'||c==='\r'){if(c==='\r'&&txt[i+1]==='\n')i++;row.push(cur);cur='';if(row.some(x=>x!==''))rows.push(row);row=[]}
+    else cur+=c;}
+  row.push(cur); if(row.some(x=>x!==''))rows.push(row); return rows;
+}
+const SIN={
+  cod:['cod','codigo','cod item','codigo item','codigo do item','cod material','codigo material','item','cod produto','codigo produto','cod mega'],
+  desc:['nome do material','descricao','descricao do item','descricao do material','material','produto','nome do material','descricao item','item descricao','nome','descricao do produto','especificacao','descricao material'],
+  un:['un','und','unid','unidade','um','unid medida','unidade medida','unidade de medida'],
+  custo:['custo unitario r','custo unitario rs','custo unitario','custo','preco','preco unitario','valor unitario','custo unit','custo medio','preco medio','vlr unitario','valor unit','custo un','preco unit','custo unitario medio'],
+  saldo:['qtd em estoque','quantidade em estoque','quantidade','saldo','qtd','qtde','estoque','saldo atual','qtde estoque','saldo estoque','estoque atual','qtd estoque','quantidade estoque','disponivel'],
+  def:['definicao item','def item','definicao','categoria','grupo']
+};
+function numPt(sr){
+  sr=String(sr??'').trim(); if(!sr||/sem/i.test(sr))return 0;
+  if(/^-?\d+(\.\d+)?([eE][-+]?\d+)?$/.test(sr))return Number(sr);
+  const v=parseFloat(sr.replace(/\./g,sr.includes(',')?'':'.').replace(',','.')); return isNaN(v)?0:v;
+}
+const NOMES={cod:'código',desc:'descrição',un:'unidade',custo:'custo',saldo:'saldo',def:'definição'};
+function melhorCab(rows,SYN,obrig){
+  let best=null;
+  for(let i=0;i<Math.min(rows.length,40);i++){
+    const m={},ns=SYN._n||(SYN._n=Object.fromEntries(Object.keys(SYN).map(k=>[k,SYN[k].map(norm)])));let hits=0;
+    (rows[i]||[]).forEach((c,ci)=>{if(c==null)return;const n=norm(c);if(!n||n.includes('sequencia'))return;
+      for(const k in ns){if(k==='_n')continue;if(m[k]===undefined&&ns[k].includes(n)){m[k]=ci;hits++;break}}});
+    if(obrig(m)&&(!best||hits>best.hits))best={i,m,hits};
+  }
+  return best;
+}
+function mapCatalogo(rows){
+  const b=melhorCab(rows,SIN,m=>m.cod!==undefined&&m.desc!==undefined); if(!b)return null;
+  const m=b.m, g=(r,k)=>m[k]===undefined?'':String(r[m[k]]??'').trim(), itens=[];
+  for(let j=b.i+1;j<rows.length;j++){const r=rows[j]||[];
+    let cod=g(r,'cod'),desc=g(r,'desc'); if(!cod||!desc)continue;
+    const sp=cod.replace(/^cod\.?\s*/i,''); if(/^\d+$/.test(sp))cod=sp;
+    if(/^\d+\.0+$/.test(cod))cod=cod.replace(/\.0+$/,'');
+    if(/^(total|cod)/i.test(cod)&&!/^\d/.test(cod))continue;
+    itens.push({cod,desc,un:g(r,'un'),custo:m.custo===undefined?null:numPt(g(r,'custo')),saldo:m.saldo===undefined?null:numPt(g(r,'saldo')),def:g(r,'def')});
+  }
+  return {itens,mega:m.custo!==undefined&&m.saldo!==undefined,cols:Object.keys(m).filter(k=>m[k]!==undefined).map(k=>NOMES[k]).join(', ')};
+}
+
+function prog(p){const b=$("bar");b.classList.remove("hidden");b.firstElementChild.style.width=Math.round(p*100)+"%"}
+const agora=()=>new Date().toLocaleDateString("pt-BR")+" "+new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+const L=n=>Number(n).toLocaleString("pt-BR");
+async function lerArquivo(f,mapper,opt){
+ if(/\.(csv|txt)$/i.test(f.name)){const r=mapper(parseCSV(await f.text()));if(!r||!r.itens.length)throw new Error("NAO_ACHEI");return[{...r,aba:"CSV"}]}
+ if(f.size>80e6)throw new Error("GRANDE");return lerXlsxGen(await f.arrayBuffer(),prog,mapper,opt)}
+const erroImp=e=>/GRANDE/.test(e.message)?"Planilha pesada demais. Copie só a aba de dados para um arquivo novo.":/NAO_ACHEI/.test(e.message)?"Não reconheci as colunas. A primeira linha da tabela precisa ter os títulos (código, descrição...).":esc(e.message||"Não consegui ler esse arquivo.");
+function statusImp(){$("stMega").innerHTML=metaMega?`✅ <b>${L(cat.length)}</b> itens · <b>${esc(metaMega.nome)}</b><br>${esc(metaMega.data)}`:"Nenhum arquivo do MEGA importado ainda."}
+async function importar(fs){const out=$("resultado");out.innerHTML="";let msgs="",primeiro=true;
+ for(const f of fs){try{prog(.05);
+  const r=(await lerArquivo(f,mapCatalogo,{preferir:/mega/i,evitar:/^(mem|memo|placa|etiq|imprimir|plan\d|planilha\d|consultar)/i}))[0];prog(.8);
+  const mapa=new Map(cat.map(i=>[i.cod,i]));let novos=0,atual=0;
+  r.itens.forEach(x=>{const v=mapa.get(x.cod);if(v){atual++;mapa.set(x.cod,{...v,desc:x.desc||v.desc,un:x.un||v.un,saldo:x.saldo,custo:x.custo})}else{novos++;mapa.set(x.cod,{cod:x.cod,desc:x.desc,un:x.un,saldo:x.saldo,custo:x.custo})}});
+  cat=[...mapa.values()].map(({h,v,...i})=>i);indexCat();await catGravar(cat);
+  metaMega={n:cat.length,nome:primeiro?f.name:metaMega.nome+" + "+f.name,data:agora()};primeiro=false;
+  msgs+=`<div class="res">✅ <b>${esc(f.name)}</b> · aba <b>${esc(r.aba)}</b><br><b>${L(r.itens.length)}</b> itens · 🆕 ${L(novos)} novos · 🔄 ${L(atual)} atualizados<br><small>Colunas lidas: ${esc(r.cols||"")}</small></div>`}
+ catch(e){msgs+=`<div class="res err">⚠️ <b>${esc(f.name)}</b>: ${erroImp(e)}</div>`}}
+ prog(1);E.metaMega=metaMega;salvar();statusImp();vibrar(20);out.innerHTML=msgs}
+$("arqMega").onchange=async e=>{const fs=[...e.target.files];e.target.value="";if(fs.length)await importar(fs)};
+$("bLimpaCat").onclick=async()=>{if(!cat.length)return toast("Catálogo já está vazio");if(!confirm("Apagar os "+cat.length+" itens do catálogo do MEGA?"))return;cat=[];metaMega=null;E.metaMega=null;await catGravar([]);salvar();statusImp();toast("Catálogo apagado")};
+function tipoDaUn(u){const n=norm(u);const mp={un:"Unidade",und:"Unidade",unid:"Unidade",l:"Litro",lt:"Litro",gl:"Galão",pc:"Peça",pca:"Peça",sc:"Saco",cx:"Caixa",kg:"Kg",m:"Metro",bd:"Balde",lata:"Lata",bisn:"Bisnaga"};return mp[n]||(TIPOS.find(t=>norm(t)===n))||(u?u:"Unidade")}
+function render(){pesquisar();locais();armazenados();conferir();cfg();statusImp()}
+/* ============ PESQUISA ============ */
+function linhaItem(m){const s=status(m);return`<div class="item ${s.c}" data-id="${m.id}"><div><strong>${esc(m.nome)}</strong><small>${esc(m.codigo?m.codigo+" · ":"")}${m.qtd} ${esc(m.tipo)} · ${esc(m.local||"sem local")}<br>Validade: ${br(validade(m))}</small></div><span class="tag">${s.t}</span></div>`}
+function ligar(c){c.querySelectorAll(".item[data-id]").forEach(i=>i.onclick=()=>formMaterial(i.dataset.id))}
+let filtro="todos";
+function linhaCat(i,k){return`<div class="item cat" data-k="${k}"><div><strong>${esc(i.desc)}</strong><small>${esc(i.cod)} · ${esc(i.un||"—")}${i.v?" · ⏳ costuma ter validade":""}</small></div><span class="tag" style="color:var(--acc);background:rgba(var(--acc-rgb),.14);text-shadow:none">Cadastrar</span></div>`}
+function pesquisar(){const q=$("q").value.trim(),r=$("res"),t=norm(q).split(" ").filter(Boolean),soVal=!!E.cfg.soVal;$("cnt").textContent=E.materiais.length;$("soVal").checked=soVal;
+ const f={todos:()=>1,venc:m=>status(m).c==="vencido",aten:m=>status(m).c==="atencao",ok:m=>status(m).c===""};
+ let html="",lista=[];
+ if(t.length||filtro!=="todos"){
+  const reg=E.materiais.filter(m=>f[filtro](m)&&t.every(w=>norm(m.nome+" "+(m.codigo||"")+" "+(m.local||"")).includes(w))).sort((a,b)=>(dias(a)??9e9)-(dias(b)??9e9));
+  if(reg.length)html+=`<div class="local-h"><span>📦 Armazenados</span><span>${reg.length}</span></div>`+reg.map(linhaItem).join("")}
+ if(filtro==="todos"&&cat.length&&(t.length||soVal)){
+  const all=cat.filter(i=>(!soVal||i.v)&&t.every(w=>i.h.includes(w)));lista=all.slice(0,40);
+  if(lista.length)html+=`<div class="local-h" style="margin-top:14px"><span>📊 Catálogo do MEGA${soVal?" · com validade":""}</span><span>${all.length>40?"40 de "+L(all.length):all.length}</span></div>`+lista.map(linhaCat).join("")}
+ if(!html)html=`<div class="vazio">${t.length||filtro!=="todos"||soVal?"Nada encontrado.":(E.materiais.length||cat.length?"Digite o nome ou código para pesquisar.":"Nenhum material cadastrado ainda.<br>Importe o MEGA ou vá em Cadastro.")}</div>`;
+ r.innerHTML=html;ligar(r);
+ r.querySelectorAll(".item.cat").forEach(el=>el.onclick=()=>{const i=lista[+el.dataset.k];formMaterial(null,{nome:i.desc,codigo:i.cod,tipo:tipoDaUn(i.un)})})}
+$("q").oninput=pesquisar;
+$("soVal").onchange=()=>{E.cfg.soVal=$("soVal").checked;salvar();pesquisar()};
+document.querySelectorAll("#chips .chip").forEach(c=>c.onclick=()=>{filtro=c.dataset.f;document.querySelectorAll("#chips .chip").forEach(x=>x.classList.toggle("on",x===c));pesquisar()});
+$("q").oninput=pesquisar;
+/* ============ LOCAIS ============ */
+function locais(){const c=$("listaLocais");c.innerHTML=E.locais.length?E.locais.map(l=>`<div class="item" style="cursor:default"><strong>${esc(l)}</strong><button class="btn red" data-l="${esc(l)}" style="padding:6px 12px;font-size:12px">Excluir</button></div>`).join(""):`<div class="vazio">Nenhum local cadastrado.</div>`;
+ c.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>{if(E.materiais.some(m=>m.local===b.dataset.l))return toast("Há materiais neste local");E.locais=E.locais.filter(x=>x!==b.dataset.l);salvar();locais()})}
+$("addLocal").onclick=()=>{const v=$("novoLocal").value.trim();if(!v)return;if(!E.locais.includes(v))E.locais.push(v);$("novoLocal").value="";salvar();locais();toast("Local cadastrado")};
+/* ============ ARMAZENADOS (locais > materiais, mover, tirar) ============ */
+let armLocal=null;
+const nomeLocal=l=>l||"Sem local";
+function armazenados(){const c=$("arm");
+ if(armLocal===null){
+  const nomes=[...new Set([...E.locais,...E.materiais.map(m=>m.local||"")])].sort((a,b)=>nomeLocal(a).localeCompare(nomeLocal(b)));
+  if(!nomes.length){c.innerHTML=`<div class="card vazio">Nenhum local ainda.<br>Cadastre locais na aba Cadastro.</div>`;return}
+  c.innerHTML=nomes.map(n=>{const l=E.materiais.filter(m=>(m.local||"")===n),pior=l.some(m=>status(m).c==="vencido")?"vencido":l.some(m=>status(m).c==="atencao")?"atencao":"";
+   return`<div class="item ${pior}" data-n="${esc(n)}"><div><strong>📍 ${esc(nomeLocal(n))}</strong><small>${l.length} item(ns)${pior?" · "+l.filter(m=>status(m).c).length+" com atenção":""}</small></div><span class="tag">Abrir ›</span></div>`}).join("");
+  c.querySelectorAll("[data-n]").forEach(e=>e.onclick=()=>{armLocal=e.dataset.n;armazenados();scrollTo(0,0)});return}
+ const l=E.materiais.filter(m=>(m.local||"")===armLocal).sort((a,b)=>(dias(a)??9e9)-(dias(b)??9e9));
+ c.innerHTML=`<button class="voltar" id="armVoltar">‹ Todos os locais</button><div class="local-h"><span>📍 ${esc(nomeLocal(armLocal))}</span><span>${l.length} item(ns)</span></div>`+
+  (l.length?l.map(m=>`<div style="margin-bottom:6px">${linhaItem(m)}<div class="linha" style="margin-top:-2px"><button class="btn out sm" data-mv="${m.id}">↔ Mover</button><button class="btn red sm" data-tr="${m.id}">➖ Tirar</button></div></div>`).join(""):`<div class="card vazio">Nenhum material neste local.</div>`);
+ $("armVoltar").onclick=()=>{armLocal=null;armazenados()};ligar(c);
+ c.querySelectorAll("[data-mv]").forEach(b=>b.onclick=()=>sheetMover(b.dataset.mv));
+ c.querySelectorAll("[data-tr]").forEach(b=>b.onclick=()=>sheetTirar(b.dataset.tr))}
+function fimAcao(msg){salvar();$("modalHost").innerHTML="";render();checarAlertas();toast(msg);vibrar(20)}
+function sheetMover(id){const m=E.materiais.find(x=>x.id===id);if(!m)return;
+ const dest=[...new Set([...E.locais,...E.materiais.map(x=>x.local||"")])].filter(n=>n!==(m.local||""));
+ $("modalHost").innerHTML=`<div class="modal-bg"><div class="modal"><h3>Mover material</h3><div class="dica">${esc(m.nome)} · está em ${esc(nomeLocal(m.local))}</div>
+  <label>Para o local<select id="mvL">${dest.map(n=>`<option value="${esc(n)}">${esc(nomeLocal(n))}</option>`).join("")}</select></label>
+  <label>Quantidade a mover (tem ${m.qtd} ${esc(m.tipo)})<input id="mvQ" type="number" min="0" step="any" value="${m.qtd}"></label>
+  <button class="btn full" id="mvOk">Mover</button><button class="btn out full" id="mvX">Cancelar</button></div></div>`;
+ $("mvX").onclick=()=>$("modalHost").innerHTML="";
+ $("mvOk").onclick=()=>{const d=$("mvL").value,q=Number($("mvQ").value);if(!dest.length)return toast("Cadastre outro local primeiro");if(!(q>0))return toast("Informe a quantidade");
+  if(q>=m.qtd){m.local=d}else{const n={...m,id:uid(),qtd:q,local:d};m.qtd=+(m.qtd-q).toFixed(3);E.materiais.push(n);Object.keys(E.resolvidos).forEach(k=>{if(k.startsWith(m.id+":"))E.resolvidos[n.id+k.slice(m.id.length)]=E.resolvidos[k]})}
+  fimAcao("Material movido")}}
+function sheetTirar(id){const m=E.materiais.find(x=>x.id===id);if(!m)return;
+ $("modalHost").innerHTML=`<div class="modal-bg"><div class="modal"><h3>Tirar do estoque</h3><div class="dica">${esc(m.nome)} · ${m.qtd} ${esc(m.tipo)} em ${esc(nomeLocal(m.local))}</div>
+  <label>Quantidade a tirar<input id="trQ" type="number" min="0" step="any" value="${m.qtd}"></label>
+  <button class="btn red full" id="trOk">Tirar</button><button class="btn out full" id="trX">Cancelar</button></div></div>`;
+ $("trX").onclick=()=>$("modalHost").innerHTML="";
+ $("trOk").onclick=()=>{const q=Number($("trQ").value);if(!(q>0))return toast("Informe a quantidade");
+  if(q>=m.qtd)E.materiais=E.materiais.filter(x=>x.id!==id);else m.qtd=+(m.qtd-q).toFixed(3);fimAcao("Retirado do estoque")}}
+/* ============ CONFERÊNCIA COM O MEGA ============ */
+let cfFiltro="todos";
+function conferencia(){const g=new Map();
+ E.materiais.forEach(m=>{const cod=(m.codigo||"").trim(),k=cod?"c:"+cod:"n:"+m.id;let r=g.get(k);if(!r){r={cod,nome:m.nome,un:m.tipo,fis:0,locais:new Set()};g.set(k,r)}r.fis+=Number(m.qtd)||0;r.locais.add(nomeLocal(m.local))});
+ const mapa=new Map(cat.map(i=>[i.cod,i]));
+ return[...g.values()].map(r=>{const c=r.cod?mapa.get(r.cod):null;r.fis=+r.fis.toFixed(3);r.locais=[...r.locais].join(", ");
+  if(!c||c.saldo==null)return{...r,mega:null,dif:null,st:"sem"};
+  const mega=Number(c.saldo)||0,dif=+(r.fis-mega).toFixed(3);return{...r,mega,dif,un:c.un||r.un,st:dif<0?"baixa":dif>0?"pos":"ok"}})}
+const ORD={baixa:0,pos:1,ok:2,sem:3};
+const nf=n=>Number(n).toLocaleString("pt-BR",{maximumFractionDigits:3});
+const acaoTxt=r=>r.st==="baixa"?`Dar baixa de ${nf(-r.dif)}`:r.st==="pos"?`Dar saldo positivo de ${nf(r.dif)}`:r.st==="ok"?"Batendo":r.cod?"Código não encontrado no MEGA":"Sem código";
+function conferir(){const rows=conferencia().sort((a,b)=>ORD[a.st]-ORD[b.st]||a.nome.localeCompare(b.nome));
+ const semSaldo=cat.length&&!cat.some(i=>i.saldo!=null);
+ $("cfAviso").innerHTML=!cat.length?`<div class="res err">Importe o arquivo do MEGA na aba Cadastro para comparar os saldos.</div>`:semSaldo?`<div class="res err">O MEGA importado não trouxe a coluna de saldo. Importe de novo um arquivo com a coluna de quantidade/saldo.</div>`:"";
+ const cont=k=>rows.filter(r=>r.st===k).length;
+ document.querySelectorAll("#cfChips .chip").forEach(c=>{const k=c.dataset.f,n=k==="todos"?rows.length:cont(k);c.textContent=({todos:"Todos",baixa:"Dar baixa",pos:"Saldo positivo",ok:"Batendo",sem:"Sem MEGA"})[k]+" · "+n;c.classList.toggle("on",k===cfFiltro)});
+ const l=rows.filter(r=>cfFiltro==="todos"||r.st===cfFiltro);
+ $("cfLista").innerHTML=l.length?l.map(r=>`<div class="item cf c-${r.st}"><div><strong>${esc(r.nome)}</strong><small>${esc(r.cod||"sem código")} · ${esc(r.locais)}</small><div class="nums"><span>MEGA <b>${r.mega===null?"—":nf(r.mega)}</b></span><span>Físico <b>${nf(r.fis)}</b></span><span>${esc(r.un||"")}</span></div></div><span class="tag">${r.st==="baixa"?"Baixa −"+nf(-r.dif):r.st==="pos"?"+"+nf(r.dif)+" saldo":r.st==="ok"?"Batendo":"Sem MEGA"}</span></div>`).join(""):`<div class="vazio">${rows.length?"Nada nesta categoria.":"Cadastre materiais (com o código do MEGA) para conferir."}</div>`}
+document.querySelectorAll("#cfChips .chip").forEach(c=>c.onclick=()=>{cfFiltro=c.dataset.f;conferir()});
+/* --- gerador de DOCX (sem bibliotecas: zip + XML) --- */
+const CRC=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc32=b=>{let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=CRC[(c^b[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0};
+function zipStore(files){const enc=new TextEncoder(),parts=[],cd=[];let off=0;
+ for(const[name,txt]of files){const nb=enc.encode(name),db=enc.encode(txt),crc=crc32(db);
+  const lh=new DataView(new ArrayBuffer(30));lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);lh.setUint16(12,0x21,true);lh.setUint32(14,crc,true);lh.setUint32(18,db.length,true);lh.setUint32(22,db.length,true);lh.setUint16(26,nb.length,true);
+  parts.push(new Uint8Array(lh.buffer),nb,db);
+  const ch=new DataView(new ArrayBuffer(46));ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);ch.setUint16(14,0x21,true);ch.setUint32(16,crc,true);ch.setUint32(20,db.length,true);ch.setUint32(24,db.length,true);ch.setUint16(28,nb.length,true);ch.setUint32(42,off,true);
+  cd.push(new Uint8Array(ch.buffer),nb);off+=30+nb.length+db.length}
+ const cdl=cd.reduce((a,x)=>a+x.length,0),e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cdl,true);e.setUint32(16,off,true);
+ return new Blob([...parts,...cd,new Uint8Array(e.buffer)],{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"})}
+const X=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const wr=(t,o={})=>`<w:r><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/>${o.b?"<w:b/>":""}${o.c?`<w:color w:val="${o.c}"/>`:""}<w:sz w:val="${o.s||19}"/></w:rPr><w:t xml:space="preserve">${X(t)}</w:t></w:r>`;
+const wp=(r,o={})=>`<w:p><w:pPr><w:spacing w:before="${o.bf||0}" w:after="${o.af??0}"/>${o.al?`<w:jc w:val="${o.al}"/>`:""}</w:pPr>${r}</w:p>`;
+const wc=(w,t,o={})=>`<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${o.f?`<w:shd w:val="clear" w:color="auto" w:fill="${o.f}"/>`:""}<w:vAlign w:val="center"/></w:tcPr>${wp(wr(t,o),{al:o.al})}</w:tc>`;
+function exportarDocx(){const rows=conferencia().sort((a,b)=>ORD[a.st]-ORD[b.st]||a.nome.localeCompare(b.nome));
+ if(!rows.length)return toast("Nada para exportar");
+ const W=[1400,4300,800,2600,1200,1200,1100,2700],H=["Código","Material","Un.","Local","MEGA","Físico","Diferença","Ação"];
+ const COR={baixa:{f:"FBE4E7",c:"A4262C"},pos:{f:"E2F4E8",c:"1E7B3A"},ok:{f:"F5F8FC",c:"4A5B75"},sem:{f:"EEF0F3",c:"7A8497"}};
+ const cont=k=>rows.filter(r=>r.st===k).length,hoje=new Date().toLocaleDateString("pt-BR");
+ const cab=`<w:tr><w:trPr><w:cantSplit/><w:tblHeader/></w:trPr>${H.map((h,i)=>wc(W[i],h,{f:"34506F",c:"FFFFFF",b:1,al:i>=4&&i<=6?"center":"left"})).join("")}</w:tr>`;
+ const lin=rows.map(r=>{const k=COR[r.st],d=r.dif===null?"—":(r.dif>0?"+":"")+nf(r.dif);
+  return`<w:tr><w:trPr><w:cantSplit/></w:trPr>${wc(W[0],r.cod||"—",{f:k.f})}${wc(W[1],r.nome,{f:k.f,b:r.st==="baixa"||r.st==="pos"})}${wc(W[2],r.un||"",{f:k.f})}${wc(W[3],r.locais,{f:k.f})}${wc(W[4],r.mega===null?"—":nf(r.mega),{f:k.f,al:"center"})}${wc(W[5],nf(r.fis),{f:k.f,al:"center"})}${wc(W[6],d,{f:k.f,al:"center",b:1,c:k.c})}${wc(W[7],acaoTxt(r),{f:k.f,b:r.st==="baixa"||r.st==="pos",c:k.c})}</w:tr>`}).join("");
+ const bd=["top","left","bottom","right","insideH","insideV"].map(x=>`<w:${x} w:val="single" w:sz="4" w:space="0" w:color="D3DAE6"/>`).join("");
+ const tbl=`<w:tbl><w:tblPr><w:tblW w:w="${W.reduce((a,b)=>a+b)}" w:type="dxa"/><w:tblBorders>${bd}</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="70" w:type="dxa"/><w:left w:w="110" w:type="dxa"/><w:bottom w:w="70" w:type="dxa"/><w:right w:w="110" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${W.map(w=>`<w:gridCol w:w="${w}"/>`).join("")}</w:tblGrid>${cab}${lin}</w:tbl>`;
+ const resumo=wp(wr("■ ",{c:"C0505A",s:22})+wr(cont("baixa")+" para dar baixa     ",{c:"A4262C",b:1,s:21})+wr("■ ",{c:"3FA763",s:22})+wr(cont("pos")+" para saldo positivo     ",{c:"1E7B3A",b:1,s:21})+wr("■ ",{c:"5B7BA6",s:22})+wr(cont("ok")+" batendo     ",{c:"4A5B75",s:21})+wr("■ ",{c:"9AA3B2",s:22})+wr(cont("sem")+" sem referência no MEGA",{c:"7A8497",s:21}),{af:240});
+ const body=wp(wr("Conferência de Materiais",{b:1,c:"34506F",s:40}),{af:40})+wp(wr("ValidaObra · gerado em "+hoje+(metaMega&&metaMega.nome?" · base MEGA: "+metaMega.nome:""),{c:"7A8497",s:19}),{af:200})+resumo+tbl+
+  wp(wr("Vermelho: o saldo do MEGA está acima do que existe fisicamente, é preciso dar baixa. Verde: existe mais material do que o MEGA registra, é preciso dar saldo positivo.",{c:"7A8497",s:17}),{bf:200});
+ const doc=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${body}<w:sectPr><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="900" w:right="720" w:bottom="900" w:left="720" w:header="400" w:footer="400" w:gutter="0"/></w:sectPr></w:body></w:document>`;
+ const blob=zipStore([["[Content_Types].xml",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`],["_rels/.rels",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`],["word/document.xml",doc]]);
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`conferencia-materiais-${iso(new Date())}.docx`;document.body.appendChild(a);a.click();a.remove();toast("DOCX gerado")}
+$("cfExp").onclick=exportarDocx;
+/* ============ FORMULÁRIO (fundo desfocado) ============ */
+$("novo").onclick=()=>formMaterial();
+function formMaterial(id,pre){const m=E.materiais.find(x=>x.id===id)||{nome:"",tipo:"Unidade",codigo:"",qtd:1,local:"",fab:"",val:"",meses:"",obs:"",...(pre||{})};
+ const h=$("modalHost");h.innerHTML=`<div class="modal-bg"><div class="modal"><h3>${id?"Editar":"Cadastrar"} material</h3>
+ ${!id&&cat.length?`<label class="keep">Buscar no MEGA (código ou nome)<input id="fMega" placeholder="Digite e toque no material" autocomplete="off"></label><div class="sw keep" style="margin:0"><span>⏳ Só materiais que costumam ter validade</span><input type="checkbox" id="fVal" ${E.cfg.soVal?"checked":""}></div><div id="fSug" class="keep"></div>`:""}
+ <label>Nome do material<input id="fN" value="${esc(m.nome)}" placeholder="Ex.: Silicone, Argamassa AC-III"></label>
+ <div class="linha"><label>Tipo<select id="fT">${(TIPOS.includes(m.tipo)?TIPOS:[...TIPOS,m.tipo]).map(t=>`<option ${t===m.tipo?"selected":""}>${t}</option>`).join("")}</select></label><label>Quantidade<input id="fQ" type="number" min="0" step="any" value="${m.qtd}"></label></div>
+ <div class="linha"><label>Código (opcional)<input id="fC" value="${esc(m.codigo)}"></label><label>Local<select id="fL"><option value="">— sem local —</option>${E.locais.map(l=>`<option ${l===m.local?"selected":""}>${esc(l)}</option>`).join("")}</select></label></div>
+ <div class="linha"><label>Data de fabricação<input id="fF" type="date" value="${m.fab}"></label><label>Validade em (meses)<input id="fM" type="number" min="1" placeholder="Ex.: 24" value="${m.meses}"></label></div>
+ <label>Data de validade<input id="fV" type="date" value="${m.val}"></label>
+ <div class="dica" id="fDica"></div>
+ <label>Observação<input id="fO" value="${esc(m.obs)}"></label>
+ <button class="btn full" id="fS">Salvar</button>
+ ${id?`<button class="btn red full" id="fD">Dar baixa / excluir</button>`:""}
+ <button class="btn out full" id="fX">Cancelar</button></div></div>`;
+ const dica=()=>{const v=$("fV").value||($("fF").value&&$("fM").value?somaMeses($("fF").value,$("fM").value):"");$("fDica").textContent=v?`Vence em ${br(v)}${$("fV").value?"":" (calculado pela fabricação + meses)"}`:"Informe a validade, ou a fabricação + meses."};
+ ["fF","fM","fV"].forEach(i=>$(i).oninput=dica);dica();
+ if($("fMega")){const mo=h.querySelector(".modal");
+  const sug=()=>{const q=norm($("fMega").value),b=$("fSug"),sv=$("fVal").checked;if(q.length<2&&!sv){b.innerHTML="";return}
+   const t=q.split(" ").filter(Boolean),r=[];for(const i of cat){if((!sv||i.v)&&t.every(w=>i.h.includes(w))){r.push(i);if(r.length>=8)break}}
+   b.innerHTML=r.length?`<div class="sug">${r.map((i,k)=>`<div data-k="${k}"><b>${esc(i.cod)}</b><span>${i.v?"⏳ ":""}${esc(i.desc)}</span><small>${esc(i.un||"")}</small></div>`).join("")}</div>`:`<div class="dica">Nada encontrado no MEGA${sv?" com validade":""}.</div>`;
+   b.querySelectorAll("[data-k]").forEach(d=>d.onclick=()=>{const i=r[+d.dataset.k],tp=tipoDaUn(i.un);$("fN").value=i.desc;$("fC").value=i.cod;
+    if(![...$("fT").options].some(o=>o.value===tp)){const o=document.createElement("option");o.textContent=tp;$("fT").appendChild(o)}$("fT").value=tp;b.innerHTML="";$("fMega").value="";mo.classList.remove("foco");vibrar(15)})};
+  $("fMega").oninput=sug;$("fMega").onfocus=()=>mo.classList.add("foco");$("fMega").onblur=()=>setTimeout(()=>mo.classList.remove("foco"),200);
+  $("fVal").onchange=()=>{E.cfg.soVal=$("fVal").checked;salvar();sug()}}
+ $("fX").onclick=()=>h.innerHTML="";
+ $("fS").onclick=()=>{const n=$("fN").value.trim();if(!n)return toast("Informe o nome");
+  const d={id:id||uid(),nome:n,tipo:$("fT").value,qtd:Number($("fQ").value)||0,codigo:$("fC").value.trim(),local:$("fL").value,fab:$("fF").value,val:$("fV").value,meses:$("fM").value,obs:$("fO").value.trim()};
+  if(!validade(d))return toast("Informe a validade ou fabricação + meses");
+  if(id){E.materiais=E.materiais.map(x=>x.id===id?d:x);Object.keys(E.resolvidos).forEach(k=>{if(k.startsWith(id+":"))delete E.resolvidos[k]})}else E.materiais.push(d);
+  salvar();h.innerHTML="";render();checarAlertas();toast("Salvo!")};
+ if(id)$("fD").onclick=()=>{if(confirm("Dar baixa neste material?")){E.materiais=E.materiais.filter(x=>x.id!==id);salvar();h.innerHTML="";render();checarAlertas();toast("Baixa feita")}}}
+/* ============ CONFIG ============ */
+function cfg(){$("kwExtra").value=E.cfg.kwExtra||"";$("unExtra").value=E.cfg.unExtra||"";$("cLimite").value=E.cfg.limite;$("cAud").value=E.cfg.auditoriaDia;$("cSom").value=E.cfg.som?1:0;$("cVib").value=E.cfg.vib?1:0}
+$("cSalvar").onclick=()=>{E.cfg.limite=Math.max(1,Number($("cLimite").value)||30);E.cfg.auditoriaDia=Math.min(31,Math.max(0,Number($("cAud").value)||0));E.cfg.som=$("cSom").value==="1";E.cfg.vib=$("cVib").value==="1";salvar();render();checarAlertas();toast("Configurações salvas")};
+$("kwSalvar").onclick=()=>{E.cfg.kwExtra=$("kwExtra").value.trim();E.cfg.unExtra=$("unExtra").value.trim();salvar();indexCat();pesquisar();toast("Filtro salvo ("+cat.filter(i=>i.v).length+" itens do MEGA com validade)")};
+$("cNotif").onclick=async()=>{if(!("Notification" in window))return toast("Sem suporte a notificações");const r=await Notification.requestPermission();E.cfg.notif=r==="granted";salvar();toast(E.cfg.notif?"Notificações ativadas":"Notificações não ativadas")};
+$("bExp").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(E)],{type:"application/json"}));a.download=`validaobra-${iso(new Date())}.json`;a.click()};
+$("bImp").onclick=()=>$("bFile").click();
+$("bFile").onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{E=Object.assign(padrao(),JSON.parse(t));salvar();render();checarAlertas();toast("Dados importados")}catch(x){toast("Arquivo inválido")}})};
+/* ============ MOTOR DE ALERTAS ============ */
+// Pendências = materiais vencidos / perto de vencer ainda NÃO resolvidos + auditoria do mês pendente.
+function pendencias(){const l=[];
+ E.materiais.forEach(m=>{const d=dias(m);if(d===null||d>E.cfg.limite)return;const est=d<0?"venc":"perto",k=`${m.id}:${est}`;if(E.resolvidos[k])return;l.push({k,m,d,tipo:"mat"})});
+ const dd=E.cfg.auditoriaDia,h=new Date();
+ if(dd>0&&h.getDate()>=dd){const k=`aud:${h.getFullYear()}-${pad(h.getMonth()+1)}`;if(!E.resolvidos[k])l.push({k,tipo:"aud",d:-1})}
+ return l.sort((a,b)=>a.d-b.d)}
+let minimizado=false;
+function textoPrazo(d){return d<0?`Vencido há ${-d} dia${-d===1?"":"s"}`:d===0?"Vence HOJE":`Vence em ${d} dia${d===1?"":"s"}`}
+function checarAlertas(abrir){const p=pendencias(),tela=$("alerta"),faixa=$("fab");
+ if(!p.length){tela.classList.add("hidden");faixa.classList.add("hidden");document.body.classList.remove("alerta-aberto");minimizado=false;return}
+ const venc=p.filter(x=>x.tipo==="mat"&&x.d<0).length;
+ $("aT").textContent=venc?`${venc} material(is) VENCIDO(S)!`:"Atenção na validade!";
+ $("aS").textContent=`${p.length} pendência(s). Toque em "Resolvido" depois de agir.`;
+ $("aL").innerHTML=p.map(x=>x.tipo==="aud"?`<div class="a-item"><div><strong>Auditoria do mês</strong><span>Conferir a validade de todo o estoque</span></div><button class="a-ok" data-k="${x.k}">Auditoria feita</button></div>`
+  :`<div class="a-item ${x.d<0?"v":""}"><div><strong>${esc(x.m.nome)}</strong><span>${textoPrazo(x.d)} · ${br(validade(x.m))}<br>${x.m.qtd} ${esc(x.m.tipo)} · ${esc(x.m.local||"sem local")}</span></div><button class="a-ok" data-k="${x.k}">Resolvido</button></div>`).join("");
+ $("aL").querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{E.resolvidos[b.dataset.k]=iso(new Date());salvar();vibrar(60);toast("Resolvido!");checarAlertas(true)});
+ $("fabN").textContent=p.length;
+ if(abrir||!minimizado){tela.classList.remove("hidden");faixa.classList.add("hidden");document.body.classList.add("alerta-aberto");minimizado=false;bipe();vibrar([300,120,300,120,300])}
+ else{tela.classList.add("hidden");faixa.classList.remove("hidden");document.body.classList.remove("alerta-aberto")}
+ notificar(p)}
+$("aMin").onclick=()=>{minimizado=true;checarAlertas()};
+$("fab").onclick=()=>checarAlertas(true);
+function notificar(p){if(!E.cfg.notif||!("Notification" in window)||Notification.permission!=="granted")return;
+ const hoje=iso(new Date());p.forEach(x=>{const k=`${x.k}:${hoje}`;if(E.enviadas[k])return;E.enviadas[k]=1;
+  const t=x.tipo==="aud"?"📋 Auditoria do mês":`🚨 ${x.m.nome}`,c=x.tipo==="aud"?"Hoje é dia de conferir a validade do estoque.":`${textoPrazo(x.d)} (${br(validade(x.m))}).`;
+  const o={body:c,icon:"icon-192.png",badge:"icon-96.png",tag:x.k,requireInteraction:true,vibrate:E.cfg.vib?[300,100,300]:undefined};
+  navigator.serviceWorker&&navigator.serviceWorker.ready?navigator.serviceWorker.ready.then(r=>r.showNotification(t,o)).catch(()=>new Notification(t,o)):new Notification(t,o)});salvar()}
+// Reacende: ao voltar pro app e a cada 2 minutos enquanto houver pendência
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){minimizado=false;checarAlertas()}});
+setInterval(()=>{if(pendencias().length){minimizado=false;checarAlertas()}},120000);
+if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+
+/* ============ AJUSTES VISUAIS (cores, vidro, brilho) ============ */
+const PRESETS=[["Ciano","#00E5FF","#7C4DFF"],["Verde","#39FF14","#00E5FF"],["Magenta","#FF2BD6","#7C4DFF"],["Laranja","#FF9100","#FF2B5E"],["Violeta","#A066FF","#00E5FF"],["Azul","#2F8CFF","#00F0C8"]];
+const PRESETS_AL=[["Vermelho","#FF2B4A"],["Laranja","#FF8A00"],["Amarelo","#FFD400"],["Magenta","#FF2BD6"],["Ciano","#00E5FF"],["Verde","#39FF14"]];
+const hex2rgb=h=>{h=h.replace("#","");return[0,2,4].map(i=>parseInt(h.substr(i,2),16))};
+const VPAD={acc:"#00E5FF",acc2:"#7C4DFF",al:"#FF2B4A",glass:14,blur:18,glow:100,anim:true};
+let V={...VPAD};try{Object.assign(V,JSON.parse(localStorage.getItem("validaobra-visual")||"{}"))}catch(e){}
+function aplicar(){const r=document.documentElement.style;
+ r.setProperty("--acc",V.acc);r.setProperty("--acc-rgb",hex2rgb(V.acc).join(","));r.setProperty("--acc2",V.acc2);r.setProperty("--acc2-rgb",hex2rgb(V.acc2).join(","));
+ r.setProperty("--al",V.al);r.setProperty("--al-rgb",hex2rgb(V.al).join(","));
+ r.setProperty("--glass",V.glass/100);r.setProperty("--blur",V.blur+"px");r.setProperty("--glow",V.glow/100);
+ document.body.classList.toggle("sem-anim",!V.anim);
+ $("tV").textContent=V.glass+"%";$("dV").textContent=V.blur+"px";$("bV").textContent=V.glow+"%";
+ $("rGlass").value=V.glass;$("rBlur").value=V.blur;$("rGlow").value=V.glow;$("swAnim").checked=V.anim;$("corAcc").value=V.acc.toLowerCase();$("corAcc2").value=V.acc2.toLowerCase();$("corAl").value=V.al.toLowerCase();
+ document.querySelectorAll("#cores .cor").forEach(c=>c.classList.toggle("on",c.dataset.a.toLowerCase()===V.acc.toLowerCase()&&c.dataset.b.toLowerCase()===V.acc2.toLowerCase()));
+ document.querySelectorAll("#coresAl .cor").forEach(c=>c.classList.toggle("on",c.dataset.a.toLowerCase()===V.al.toLowerCase()));
+ document.querySelector('meta[name=theme-color]').content="#04060F";
+ try{localStorage.setItem("validaobra-visual",JSON.stringify(V))}catch(e){}}
+$("cores").innerHTML=PRESETS.map(p=>`<button class="cor" data-a="${p[1]}" data-b="${p[2]}"><i style="background:linear-gradient(135deg,${p[1]},${p[2]});box-shadow:0 0 14px ${p[1]}"></i>${p[0]}</button>`).join("");
+$("coresAl").innerHTML=PRESETS_AL.map(p=>`<button class="cor" data-a="${p[1]}"><i style="background:${p[1]};box-shadow:0 0 14px ${p[1]}"></i>${p[0]}</button>`).join("");
+$("cores").onclick=e=>{const b=e.target.closest(".cor");if(b){V.acc=b.dataset.a;V.acc2=b.dataset.b;aplicar()}};
+$("coresAl").onclick=e=>{const b=e.target.closest(".cor");if(b){V.al=b.dataset.a;aplicar()}};
+$("corAcc").oninput=e=>{V.acc=e.target.value;aplicar()};$("corAcc2").oninput=e=>{V.acc2=e.target.value;aplicar()};$("corAl").oninput=e=>{V.al=e.target.value;aplicar()};
+$("rGlass").oninput=e=>{V.glass=+e.target.value;aplicar()};$("rBlur").oninput=e=>{V.blur=+e.target.value;aplicar()};$("rGlow").oninput=e=>{V.glow=+e.target.value;aplicar()};
+$("swAnim").onchange=e=>{V.anim=e.target.checked;aplicar()};
+$("bReset").onclick=()=>{V={...VPAD};aplicar();toast("Visual restaurado")};
+aplicar();
+abrirDB().then(async()=>{cat=await catLer();indexCat();metaMega=E.metaMega||(cat.length?{n:cat.length,nome:"MEGA",data:""}:null);render()});
+render();setTimeout(checarAlertas,350);
+</script></body></html>
